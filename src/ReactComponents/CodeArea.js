@@ -1,26 +1,6 @@
-// import React, {useState} from "react";
-// import './CodeArea.css';
-
-// function CodeArea() {
-//     const [code] = useState(
-//         "import java.io.*;\npublic class MyClass {\n\tpublic static void main(String args[]) throws Exception {\n\t\tBufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n\t\tString s = br.readLine();\n\t\tSystem.out.println(s);\n\t}\n}"
-//         );
-//     return (
-//         <div className="CodeArea-code-div">
-//             <code><textarea className="CodeArea-textarea" wrap="off" spellcheck="false" onChange={makeCodePretty}>{code}</textarea></code>
-//         </div>
-//     );
-// }
-
-// function makeCodePretty() {
-
-    
-// }
-
-// export default CodeArea;
-
 import React, {useState} from "react";
 import './CodeArea.css';
+import javaDarkTheme from "../CodingLanguagePacks/javaDarkTheme.js";
 const $ = window.$;
 
 function CodeArea() {
@@ -36,7 +16,7 @@ function CodeArea() {
         `);
     return (
         <div className="container">
-            <code><div contentEditable="true" className="CodeArea-textarea" wrap="off" spellCheck="false" onKeyDown={makeCodePretty}></div></code>
+            <code><pre contentEditable="true" className="CodeArea-textarea" wrap="off" tab-size="4"spellCheck="false" onKeyDown={makeCodePretty} onKeyUp={updateColors}></pre></code>
         </div>
     );
 }
@@ -44,25 +24,21 @@ function CodeArea() {
 function makeCodePretty(event) {
     let keyCode = event.keyCode;
 
-    //TODO Make it so that when tab, space, or enter is pressed, a new div with class code-segment is created and the selection/cursor is moved appropriately
-    
-
     //Tab key pressed
     if(keyCode == 9) {
         event.preventDefault();
         let selection = window.getSelection();
         let range = selection.getRangeAt(0);
-        range.deleteContents();
-        let newNode = document.createElement("div");
-        newNode.classList.add("CodeArea-code-segment");
-        range.insertNode(newNode);
+        let cursorIndex = range.startOffset + 1;
+        let tab = "&#09;";
 
-        newNode.innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;"
+        $(event.target).html(
+            range.startContainer.textContent.substring(0, range.startOffset) + //All text up until the cursor
+            tab +
+            range.startContainer.textContent.substring(range.startOffset) //All text after the cursor
+        );
 
-        $(newNode).appendTo($(newNode).closest('.CodeArea-textarea'));
-
-        for(let position = 0; position != 4; position++)
-        {
+        for(let i = 0; i < cursorIndex; i++) {
             selection.modify("move", "right", "character");
         }
     }
@@ -71,46 +47,51 @@ function makeCodePretty(event) {
         event.preventDefault();
         let selection = window.getSelection();
         let range = selection.getRangeAt(0);
-        range.deleteContents();
-        let newNode = document.createElement("div");
-        newNode.classList.add("CodeArea-code-segment");
-        newNode.innerHTML = "&#8203;"; //Empty character
-    
-        range.insertNode(newNode);
-        $(document.createElement("br")).appendTo($(newNode).closest('.CodeArea-textarea'));
-        $(newNode).appendTo($(newNode).closest('.CodeArea-textarea'));
+        let cursorIndex = range.startOffset + 1;
+        let newLine = range.startContainer.textContent.charCodeAt(range.startOffset - 1) == 10 ? "&#10;" : "&#10;&#10;"; //Double line feed needed when text is present on current line
         
-        selection.modify("move", "right", "line");
+        $(event.target).html(
+            range.startContainer.textContent.substring(0, range.startOffset) + //All text up until the cursor
+            newLine + //line feed
+            range.startContainer.textContent.substring(range.startOffset) //All text after the cursor
+        );
+
+        //Move the cursor caret to the new cursor index
+        for(let i = 0; i < cursorIndex; i++) {
+            selection.modify("move", "right", "character");
+        }
     } 
-    //Space key pressed
-    else if(keyCode == 32) {
-        console.log(event.keyCode);
-    }
-    //Backspace key pressed
-    else if(keyCode == 8) {
-        
-        //Make it so that if the current div is empty and the previous child is a <br>, then backspace twice
-        console.log(event.keyCode);
-    }
 }
 
-function updateCodeArea() {
+function updateColors(event) {
 
+    let currentHTML = "", currentWord = "", html = $(event.target).html();
+
+    for(let i = 0; i < html.length; i++) {
+
+        currentHTML += html.charAt(i);
+
+        if((html.charAt(i) + "").trim() == "" && currentWord.length != 0) { //USE REGEX INSTEAD?????????????????????????
+            //Check if currentWord is a keyword
+            if(javaDarkTheme[currentWord + "KeyWord"]) {
+
+                //Wrap in a <span> with its color 
+                currentHTML += "<span style='color: " + javaDarkTheme[currentWord + "KeyWord"] + "'></span>";
+            }
+                //then change its color accordingly by enclosing it in a span
+            
+
+            currentWord = "";
+        }
+        else {
+            currentWord += html.charAt(i);
+            console.log("currentWord: " + currentWord);
+            console.log("assert color: " + javaDarkTheme.assertKeyWord);
+            console.log("asicbnia color: " + javaDarkTheme.asicbnia); //undefined
+        }
+    }
+
+    $(event.target).html(currentHTML);
 }
-    
-
-
-//     document.querySelector('.CodeArea-textarea').innerHTML = `
-//     <div>import java.io.*;</div>
-//     <div>public class MyClass {</div>
-//     <div>public static void main(String args[]) throws Exception {</div>
-//     <div>BufferedReader br = new BufferedReader(new InputStreamReader(System.in));</div>
-//     <div>String s = br.readLine();</div>
-//     <div>System.out.println(s);</div>
-//     <div>}</div>
-// <div>}</div>
-// `;
-    
-
 
 export default CodeArea;
