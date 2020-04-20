@@ -36,18 +36,67 @@ function CodeArea() {
         `);
     return (
         <div className="container">
-            <code><div contentEditable="true" className="CodeArea-textarea" wrap="off" spellCheck="false" onKeyUp={makeCodePretty}></div></code>
+            <code><div contentEditable="true" className="CodeArea-textarea" wrap="off" spellCheck="false" onKeyDown={makeCodePretty}></div></code>
         </div>
     );
 }
 
 function makeCodePretty(event) {
     let keyCode = event.keyCode;
+
+    //TODO Make it so that when tab, space, or enter is pressed, a new div with class code-segment is created and the selection/cursor is moved appropriately
     
+
+    //Tab key pressed
+    if(keyCode == 9) {
+        event.preventDefault();
+        let selection = window.getSelection();
+        let range = selection.getRangeAt(0);
+        range.deleteContents();
+        let newNode = document.createElement("div");
+        newNode.classList.add("CodeArea-code-segment");
+        range.insertNode(newNode);
+
+        newNode.innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;"
+
+        $(newNode).appendTo($(newNode).closest('.CodeArea-textarea'));
+
+        for(let position = 0; position != 4; position++)
+        {
+            selection.modify("move", "right", "character");
+        }
+    }
+    //Enter key pressed
+    else if(keyCode == 13) {
+        event.preventDefault();
+        let selection = window.getSelection();
+        let range = selection.getRangeAt(0);
+        range.deleteContents();
+        let newNode = document.createElement("div");
+        newNode.classList.add("CodeArea-code-segment");
+        newNode.innerHTML = "&#8203;"; //Empty character
     
-    if(keyCode == 13 || keyCode == 32 || keyCode == 8) {
+        range.insertNode(newNode);
+        $(document.createElement("br")).appendTo($(newNode).closest('.CodeArea-textarea'));
+        $(newNode).appendTo($(newNode).closest('.CodeArea-textarea'));
+        
+        selection.modify("move", "right", "line");
+    } 
+    //Space key pressed
+    else if(keyCode == 32) {
         console.log(event.keyCode);
     }
+    //Backspace key pressed
+    else if(keyCode == 8) {
+        
+        //Make it so that if the current div is empty and the previous child is a <br>, then backspace twice
+        console.log(event.keyCode);
+    }
+}
+
+function updateCodeArea() {
+
+}
     
 
 
@@ -62,6 +111,6 @@ function makeCodePretty(event) {
 // <div>}</div>
 // `;
     
-}
+
 
 export default CodeArea;
