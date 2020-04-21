@@ -16,7 +16,7 @@ function CodeArea() {
         `);
     return (
         <div className="container">
-            <code><pre contentEditable="true" className="CodeArea-textarea" wrap="off" tab-size="4"spellCheck="false" onKeyDown={makeCodePretty} onKeyUp={updateColors}></pre></code>
+            <code><pre contentEditable="true" className="CodeArea-textarea" wrap="off" tab-size="4"spellCheck="false" onKeyDown={makeCodePretty}></pre></code>
         </div>
     );
 }
@@ -24,48 +24,67 @@ function CodeArea() {
 function makeCodePretty(event) {
     let keyCode = event.keyCode;
 
-    //Tab key pressed
-    if(keyCode == 9) {
+    //TODO:
+        //Can I have tabs and spaces on the same line?
+            //Maybe switch the tab character out for 4[tab-size] spaces? 
+                //Also update the backspace to check for a tab-sized sequence of spaces?
+
+    //Space key pressed
+    if(keyCode == 32) {
         event.preventDefault();
         let selection = window.getSelection();
         let range = selection.getRangeAt(0);
-        let cursorIndex = range.startOffset + 1;
-        let tab = "&#09;";
+        let cursorIndex = $(event.target).text().length - range.startContainer.wholeText.length + range.startOffset;
+        let space = " ";
 
         $(event.target).html(
-            range.startContainer.textContent.substring(0, range.startOffset) + //All text up until the cursor
-            tab +
-            range.startContainer.textContent.substring(range.startOffset) //All text after the cursor
+            $(event.target).text().substring(0, cursorIndex) + //All text up until the cursor
+            space +
+            $(event.target).text().substring(cursorIndex) //All text after the cursor
         );
 
-        for(let i = 0; i < cursorIndex; i++) {
-            selection.modify("move", "right", "character");
-        }
+        updateColors($(event.target), selection, range, cursorIndex + 1, space);
+    }    
+    //Tab key pressed
+    else if(keyCode == 9) {
+        event.preventDefault();
+        let selection = window.getSelection();
+        let range = selection.getRangeAt(0);
+        let cursorIndex = $(event.target).text().length - range.startContainer.wholeText.length + range.startOffset;
+        let tab = "&#09;"; //HTML code for tab
+
+        $(event.target).html(
+            $(event.target).text().substring(0, cursorIndex) + //All text up until the cursor
+            tab +
+            $(event.target).text().substring(cursorIndex) //All text after the cursor
+        );
+
+        updateColors($(event.target), selection, range, cursorIndex + 1, tab);
     }
     //Enter key pressed
     else if(keyCode == 13) {
-        event.preventDefault();
-        let selection = window.getSelection();
-        let range = selection.getRangeAt(0);
-        let cursorIndex = range.startOffset + 1;
-        let newLine = range.startContainer.textContent.charCodeAt(range.startOffset - 1) == 10 ? "&#10;" : "&#10;&#10;"; //Double line feed needed when text is present on current line
         
-        $(event.target).html(
-            range.startContainer.textContent.substring(0, range.startOffset) + //All text up until the cursor
-            newLine + //line feed
-            range.startContainer.textContent.substring(range.startOffset) //All text after the cursor
-        );
+        if($(event.target).text().length > 0) {
+            event.preventDefault();
+            let selection = window.getSelection();
+            let range = selection.getRangeAt(0);
+            let cursorIndex = $(event.target).text().length - range.startContainer.wholeText.length + range.startOffset;
+            let newLine = $(event.target).text().charCodeAt(cursorIndex) == 10 ? "&#10;" : "&#10;&#10;"; //Double line feed needed when text is present on current line
+            
+            $(event.target).html(
+                $(event.target).text().substring(0, cursorIndex) + //All text up until the cursor
+                newLine + //line feed
+                $(event.target).text().substring(cursorIndex) //All text after the cursor
+            );
 
-        //Move the cursor caret to the new cursor index
-        for(let i = 0; i < cursorIndex; i++) {
-            selection.modify("move", "right", "character");
+            updateColors($(event.target), selection, range, cursorIndex + 1, newLine);
         }
     } 
 }
 
-function updateColors(event) {
+function updateColors(eventTarget, selection, range, cursorIndex, character) {
 
-    let currentHTML = "", currentWord = "", html = $(event.target).html();
+    let currentHTML = "", currentWord = "", html = eventTarget.html();
 
     for(let i = 0; i < html.length; i++) {
 
@@ -76,22 +95,24 @@ function updateColors(event) {
             if(javaDarkTheme[currentWord + "KeyWord"]) {
 
                 //Wrap in a <span> with its color 
-                currentHTML += "<span style='color: " + javaDarkTheme[currentWord + "KeyWord"] + "'></span>";
+                currentHTML = currentHTML.substring(0, currentHTML.length - currentWord.length - 1) + 
+                              "<span style='color: " + javaDarkTheme[currentWord + "KeyWord"] + "'>" + currentWord + "</span>" + 
+                              character;
             }
-                //then change its color accordingly by enclosing it in a span
             
-
             currentWord = "";
         }
         else {
             currentWord += html.charAt(i);
-            console.log("currentWord: " + currentWord);
-            console.log("assert color: " + javaDarkTheme.assertKeyWord);
-            console.log("asicbnia color: " + javaDarkTheme.asicbnia); //undefined
         }
     }
 
-    $(event.target).html(currentHTML);
+    eventTarget.html(currentHTML);
+
+    //Move the cursor caret to the new cursor index
+    for(let i = 0; i < cursorIndex; i++) {
+        selection.modify("move", "right", "character");
+    }
 }
 
 export default CodeArea;
