@@ -20,7 +20,7 @@ function CodeArea() {
         </div>
     );
 }
-
+//MOVE THIS TO A SCRIPT FILE AND IMPORT IT FOR THE KEYDOWN EVENT
 function makeCodePretty(event) {
     let keyCode = event.keyCode;
 
@@ -28,6 +28,8 @@ function makeCodePretty(event) {
         //Can I have tabs and spaces on the same line?
             //Maybe switch the tab character out for 4[tab-size] spaces? 
                 //Also update the backspace to check for a tab-sized sequence of spaces?
+                    //only if numSpaces%tabsize==0, otherwise delete a single space
+                //Same with Delete key
 
     //Space key pressed
     if(keyCode == 32) {
@@ -42,8 +44,7 @@ function makeCodePretty(event) {
             space +
             $(event.target).text().substring(cursorIndex) //All text after the cursor
         );
-
-        updateColors($(event.target), selection, range, cursorIndex + 1, space);
+        updateColors($(event.target), selection, cursorIndex + 1);
     }    
     //Tab key pressed
     else if(keyCode == 9) {
@@ -51,7 +52,7 @@ function makeCodePretty(event) {
         let selection = window.getSelection();
         let range = selection.getRangeAt(0);
         let cursorIndex = $(event.target).text().length - range.startContainer.wholeText.length + range.startOffset;
-        let tab = "&#09;"; //HTML code for tab
+        let tab = "    "; //BUILD THIS FROM THE TAB SIZE SELECTED
 
         $(event.target).html(
             $(event.target).text().substring(0, cursorIndex) + //All text up until the cursor
@@ -59,7 +60,7 @@ function makeCodePretty(event) {
             $(event.target).text().substring(cursorIndex) //All text after the cursor
         );
 
-        updateColors($(event.target), selection, range, cursorIndex + 1, tab);
+        updateColors($(event.target), selection, cursorIndex + tab.length);
     }
     //Enter key pressed
     else if(keyCode == 13) {
@@ -77,33 +78,44 @@ function makeCodePretty(event) {
                 $(event.target).text().substring(cursorIndex) //All text after the cursor
             );
 
-            updateColors($(event.target), selection, range, cursorIndex + 1, newLine);
+            updateColors($(event.target), selection, cursorIndex + 1);
         }
     } 
+
+    //Backspace key pressed
+    else if(keyCode == 8) {
+
+    }
+    //Delete key pressed
+    else if(keyCode == 46) {
+
+    }
 }
 
-function updateColors(eventTarget, selection, range, cursorIndex, character) {
+function updateColors(eventTarget, selection, cursorIndex) { 
 
-    let currentHTML = "", currentWord = "", html = eventTarget.html();
+    let currentHTML = "", currentWord = "", text = eventTarget.html();
 
-    for(let i = 0; i < html.length; i++) {
+    console.log("updateColorstext: " + text);
 
-        currentHTML += html.charAt(i);
+    for(let i = 0; i < text.length; i++) {
 
-        if((html.charAt(i) + "").trim() == "" && currentWord.length != 0) { //USE REGEX INSTEAD?????????????????????????
+        currentHTML += text.charAt(i);
+
+        if(((text.charAt(i) + "").trim() == "") /*&& currentWord.length != 0*/) { //USE REGEX INSTEAD?????????????????????????
             //Check if currentWord is a keyword
             if(javaDarkTheme[currentWord + "KeyWord"]) {
 
                 //Wrap in a <span> with its color 
                 currentHTML = currentHTML.substring(0, currentHTML.length - currentWord.length - 1) + 
-                              "<span style='color: " + javaDarkTheme[currentWord + "KeyWord"] + "'>" + currentWord + "</span>" + 
-                              character;
+                              "<span style='color: " + javaDarkTheme[currentWord + "KeyWord"] + "'>" + currentWord + "</span>" +
+                              currentHTML.charAt(currentHTML.length-1);
+
             }
-            
             currentWord = "";
         }
         else {
-            currentWord += html.charAt(i);
+            currentWord += text.charAt(i);
         }
     }
 
