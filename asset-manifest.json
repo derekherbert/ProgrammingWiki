@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/ProgrammingWiki/static/css/main.d534915b.chunk.css",
-    "main.js": "/ProgrammingWiki/static/js/main.13f0f087.chunk.js",
-    "main.js.map": "/ProgrammingWiki/static/js/main.13f0f087.chunk.js.map",
+    "main.js": "/ProgrammingWiki/static/js/main.42d14616.chunk.js",
+    "main.js.map": "/ProgrammingWiki/static/js/main.42d14616.chunk.js.map",
     "runtime-main.js": "/ProgrammingWiki/static/js/runtime-main.3ab59ecf.js",
     "runtime-main.js.map": "/ProgrammingWiki/static/js/runtime-main.3ab59ecf.js.map",
     "static/js/2.6bf7f3ab.chunk.js": "/ProgrammingWiki/static/js/2.6bf7f3ab.chunk.js",
     "static/js/2.6bf7f3ab.chunk.js.map": "/ProgrammingWiki/static/js/2.6bf7f3ab.chunk.js.map",
     "index.html": "/ProgrammingWiki/index.html",
-    "precache-manifest.52b78364ac3a1d6e6930a6fc3d15024f.js": "/ProgrammingWiki/precache-manifest.52b78364ac3a1d6e6930a6fc3d15024f.js",
+    "precache-manifest.aaf18540a9aab285bb18ff8ef3123f8b.js": "/ProgrammingWiki/precache-manifest.aaf18540a9aab285bb18ff8ef3123f8b.js",
     "service-worker.js": "/ProgrammingWiki/service-worker.js",
     "static/css/main.d534915b.chunk.css.map": "/ProgrammingWiki/static/css/main.d534915b.chunk.css.map",
     "static/js/2.6bf7f3ab.chunk.js.LICENSE.txt": "/ProgrammingWiki/static/js/2.6bf7f3ab.chunk.js.LICENSE.txt"
@@ -17,6 +17,6 @@
     "static/js/runtime-main.3ab59ecf.js",
     "static/js/2.6bf7f3ab.chunk.js",
     "static/css/main.d534915b.chunk.css",
-    "static/js/main.13f0f087.chunk.js"
+    "static/js/main.42d14616.chunk.js"
   ]
 }
