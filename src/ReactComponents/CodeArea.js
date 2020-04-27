@@ -15,7 +15,17 @@ function CodeArea() {
         `);
     return (
         <div className="container">
-            <code><pre contentEditable="true" className="CodeArea-textarea" wrap="off" tab-size="4"spellCheck="false" onKeyDown={makeCodeAreaPretty}></pre></code>
+            <code>
+                <pre 
+                    contentEditable="true" 
+                    className="CodeArea-textarea" 
+                    wrap="off" 
+                    tab-size="4"
+                    spellCheck="false" 
+                    onKeyDown={makeCodeAreaPretty}
+                >
+                </pre>
+            </code>
         </div>
     );
 }

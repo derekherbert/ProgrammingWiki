@@ -10,9 +10,6 @@ const $ = window.$;
         //Go down an extra line and auto-tab to the same spot as the previous line
 
 //BUGS:
-    //space and tab need the updated cursorIndex logic
-    //Enter in the middle of a word or span puts cursor on a newline with remaining text on the line below
-    //tab in the middle of a span does not work properly
 
     //colors don't update when brackets are touching the keywords
         //Ex: if() else{}
@@ -25,9 +22,6 @@ const $ = window.$;
 
     //Angle brackets treated as HTML
 
-    //Keywords don't change colors if:
-        //I type the keyword, then move the cursor to the left/up/before the word, then hit space
-        
 //NICE TO DO: 
     //Change updateColors to run every keydown and click event?
         //Right now if I type a full keyword, it only updates when I hit space, tab, or enter. Would be nice if it updated when I moved arrow keys, or more generally updated the cursor position
@@ -96,10 +90,15 @@ function makeCodeAreaPretty(event) {
     else if(keyCode === 46) {
 
     }
+    //Left arrow, up arrow, right arrow, down arrow, end key, home key, page up key, page down key
+    // else if (keyCode === 37 || keyCode === 38 || keyCode === 39 || keyCode === 40 
+    //          || keyCode === 35 || keyCode === 36 || keyCode === 33 || keyCode === 34) {
+    //     updateColors(eventTarget);
+    // }
 }
 
 function updateColors(eventTarget) { 
-
+    
     let currentHTML = "", currentWord = "", text = eventTarget.html();
 
     for(let i = 0; i < text.length; i++) {
@@ -114,7 +113,6 @@ function updateColors(eventTarget) {
                 currentHTML = currentHTML.substring(0, currentHTML.length - currentWord.length - 1) + 
                               "<span style='color: " + javaDarkTheme[currentWord + "KeyWord"] + "'>" + currentWord + "</span>" +
                               currentHTML.charAt(currentHTML.length-1);
-
             }
             currentWord = "";
         }

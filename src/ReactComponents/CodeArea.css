@@ -1,60 +1,34 @@
-/* code {
-    
-}
-
-.CodeArea-textarea {
-    resize: both;
-    overflow: auto;
-    border: 1px solid black;
-    outline: none;
-    cursor: auto;
-    background-color: #1e1e1e;
-    color: #d4d4d4;
-    border-radius: 5px;
-    
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
-}
-
-.CodeArea-code-div {
-    text-align: center;
-}
-
-textarea::-webkit-scrollbar {
-    height: 10px;
-    width: 10px;
-    background-color: #F5F5F5; 
-}
-  
-textarea::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
-    background-color: #4285F4; 
-} */
-
-
-code {
-    
-}
-
 .CodeArea-textarea {
     font-family: Consolas, "Courier New", monospace;
     font-size: 14px;
     line-height: 19px;
-    
+    caret-color: #d4d4d4;
     resize: both;
     overflow: auto;
-    border: 1px solid black;
-    outline: none;
-    cursor: auto;
+    border: none;
+    outline: none; 
     background-color: #1e1e1e;
     color: #d4d4d4;
     border-radius: 5px;
+    cursor: auto;
+    padding: 10px;
     
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
     box-shadow: none;
+}
+
+.CodeArea-textarea::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+    background-color: #383838; 
+    border-top-right-radius: 5px;
+}
+  
+.CodeArea-textarea::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+    background-color: #569cd6; 
 }
 
 .CodeArea-code-div {
@@ -64,15 +38,3 @@ code {
 .CodeArea-code-segment {
     display: inline;
 }
-
-/*textarea::-webkit-scrollbar {
-    height: 10px;
-    width: 10px;
-    background-color: #F5F5F5; 
-}
-  
-textarea::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
-    background-color: #4285F4; 
-}*/
