@@ -39,6 +39,10 @@ code {
 }
 
 .CodeArea-textarea {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 14px;
+    line-height: 19px;
+    
     resize: both;
     overflow: auto;
     border: 1px solid black;

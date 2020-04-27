@@ -1,7 +1,6 @@
 import React, {useState} from "react";
 import './CodeArea.css';
-import javaDarkTheme from "../CodingLanguagePacks/javaDarkTheme.js";
-const $ = window.$;
+import makeCodeAreaPretty from "../scripts/makeCodeAreaPretty.js";
 
 function CodeArea() {
     const [code] = useState(`
@@ -16,115 +15,9 @@ function CodeArea() {
         `);
     return (
         <div className="container">
-            <code><pre contentEditable="true" className="CodeArea-textarea" wrap="off" tab-size="4"spellCheck="false" onKeyDown={makeCodePretty}></pre></code>
+            <code><pre contentEditable="true" className="CodeArea-textarea" wrap="off" tab-size="4"spellCheck="false" onKeyDown={makeCodeAreaPretty}></pre></code>
         </div>
     );
-}
-//MOVE THIS TO A SCRIPT FILE AND IMPORT IT FOR THE KEYDOWN EVENT
-function makeCodePretty(event) {
-    let keyCode = event.keyCode;
-
-    //TODO:
-        //Can I have tabs and spaces on the same line?
-            //Maybe switch the tab character out for 4[tab-size] spaces? 
-                //Also update the backspace to check for a tab-sized sequence of spaces?
-                    //only if numSpaces%tabsize==0, otherwise delete a single space
-                //Same with Delete key
-
-    //Space key pressed
-    if(keyCode == 32) {
-        event.preventDefault();
-        let selection = window.getSelection();
-        let range = selection.getRangeAt(0);
-        let cursorIndex = $(event.target).text().length - range.startContainer.wholeText.length + range.startOffset;
-        let space = " ";
-
-        $(event.target).html(
-            $(event.target).text().substring(0, cursorIndex) + //All text up until the cursor
-            space +
-            $(event.target).text().substring(cursorIndex) //All text after the cursor
-        );
-        updateColors($(event.target), selection, cursorIndex + 1);
-    }    
-    //Tab key pressed
-    else if(keyCode == 9) {
-        event.preventDefault();
-        let selection = window.getSelection();
-        let range = selection.getRangeAt(0);
-        let cursorIndex = $(event.target).text().length - range.startContainer.wholeText.length + range.startOffset;
-        let tab = "    "; //BUILD THIS FROM THE TAB SIZE SELECTED
-
-        $(event.target).html(
-            $(event.target).text().substring(0, cursorIndex) + //All text up until the cursor
-            tab +
-            $(event.target).text().substring(cursorIndex) //All text after the cursor
-        );
-
-        updateColors($(event.target), selection, cursorIndex + tab.length);
-    }
-    //Enter key pressed
-    else if(keyCode == 13) {
-        
-        if($(event.target).text().length > 0) {
-            event.preventDefault();
-            let selection = window.getSelection();
-            let range = selection.getRangeAt(0);
-            let cursorIndex = $(event.target).text().length - range.startContainer.wholeText.length + range.startOffset;
-            let newLine = $(event.target).text().charCodeAt(cursorIndex) == 10 ? "&#10;" : "&#10;&#10;"; //Double line feed needed when text is present on current line
-            
-            $(event.target).html(
-                $(event.target).text().substring(0, cursorIndex) + //All text up until the cursor
-                newLine + //line feed
-                $(event.target).text().substring(cursorIndex) //All text after the cursor
-            );
-
-            updateColors($(event.target), selection, cursorIndex + 1);
-        }
-    } 
-
-    //Backspace key pressed
-    else if(keyCode == 8) {
-
-    }
-    //Delete key pressed
-    else if(keyCode == 46) {
-
-    }
-}
-
-function updateColors(eventTarget, selection, cursorIndex) { 
-
-    let currentHTML = "", currentWord = "", text = eventTarget.html();
-
-    console.log("updateColorstext: " + text);
-
-    for(let i = 0; i < text.length; i++) {
-
-        currentHTML += text.charAt(i);
-
-        if(((text.charAt(i) + "").trim() == "") /*&& currentWord.length != 0*/) { //USE REGEX INSTEAD?????????????????????????
-            //Check if currentWord is a keyword
-            if(javaDarkTheme[currentWord + "KeyWord"]) {
-
-                //Wrap in a <span> with its color 
-                currentHTML = currentHTML.substring(0, currentHTML.length - currentWord.length - 1) + 
-                              "<span style='color: " + javaDarkTheme[currentWord + "KeyWord"] + "'>" + currentWord + "</span>" +
-                              currentHTML.charAt(currentHTML.length-1);
-
-            }
-            currentWord = "";
-        }
-        else {
-            currentWord += text.charAt(i);
-        }
-    }
-
-    eventTarget.html(currentHTML);
-
-    //Move the cursor caret to the new cursor index
-    for(let i = 0; i < cursorIndex; i++) {
-        selection.modify("move", "right", "character");
-    }
 }
 
 export default CodeArea;
