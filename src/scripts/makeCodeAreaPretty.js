@@ -8,17 +8,23 @@ const $ = window.$;
     //Parentheses and brackets
         //ghost brackets that fully appear when you hit enter?
         //Go down an extra line and auto-tab to the same spot as the previous line
+    //Auto-Tabbing 
+        //When you hit enter, the next line gets auto-tabbed to the same position as the previous line
+            //if the last real character in the previous line is an open bracket, tab in one extra
+    //If a word starts with a capital, update the color (it is a class)
 
 //BUGS:
 
-    //colors don't update when brackets or other special characters are touching the keywords
-        //if() 
-        //else{} 
-        //int[] 
-        //return;
-        //case:
-        //else// or /*
-        //I guess anything besides alpha-numeric characters
+    //I did a hack in which I set the default codearea value to be \n
+        //if(eventTarget.text() == "") eventTarget.text("\n");
+        //This causes an issue when I backspace into the beginning of the textarea but still have text to my right. It shoves everything on a new line.
+        //I should fix updateColors to work properly on the first line
+
+
+    //if some text is selected, then you type, it should type over it, but instead appends
+        //same if you hit delete or backspace
+
+    //Copy and pasting spans pastes a new <pre> tag with the span inside
 
     //When pasting content, it should paste without formatting, then update the colors
         //formatting meaning font-type, font-size, boldness, background-color, etc. 
@@ -33,86 +39,98 @@ const $ = window.$;
         //Right now if I type a full keyword, it only updates when I hit space, tab, or enter. Would be nice if it updated when I moved arrow keys, or more generally updated the cursor position
             //Or even nicer if it updated as soon as a keydown event occurs and the keyword is formed
 
-
 function makeCodeAreaPretty(event) {
-    let keyCode = event.keyCode;
-    let eventTarget = $(event.target);
-    let selection = window.getSelection();
-    let range = selection.getRangeAt(0);
-    let cursorIndex = getCursorIndex(event.target, selection);
+       
+    if(!event.ctrlKey && !event.altKey) {
 
-    //Space key pressed
-    if(keyCode === 32) {
-        event.preventDefault();
-        
-        let space = " ";
+        let keyCode = event.keyCode;
+        let key = event.key;
+        let eventTarget = $(event.target);
+        let selection = window.getSelection();
+        let range = selection.getRangeAt(0);
+        let cursorIndex = getCursorIndex(event.target, selection);
+        let newCursorIndex = cursorIndex + 1;
+        let insertChar = false;
+        let characterToInsert = "";
 
-        eventTarget.html(
-            eventTarget.text().substring(0, cursorIndex) + //All text up until the cursor
-            space +
-            eventTarget.text().substring(cursorIndex) //All text after the cursor
-        );
-        updateColors(eventTarget);
-        moveCursorToNewPosition(selection, cursorIndex + 1);
-    }    
-    //Tab key pressed
-    else if(keyCode === 9) {
-        event.preventDefault();
-        
-        let tab = "    "; //BUILD THIS FROM THE TAB SIZE SELECTED
+        if(eventTarget.text() == "") eventTarget.text("\n"); //Default text value is \n. This makes the updateColors() logic a bit simpler
 
-        eventTarget.html(
-            eventTarget.text().substring(0, cursorIndex) + //All text up until the cursor
-            tab +
-            eventTarget.text().substring(cursorIndex) //All text after the cursor
-        );
+        //Space key pressed
+        if(keyCode === 32) {
+            characterToInsert = " ";
+            insertChar = true;
+        }    
+        //Tab key pressed
+        else if(keyCode === 9) {
+            characterToInsert = "    "; //BUILD THIS FROM THE TAB SIZE SELECTED
+            newCursorIndex = cursorIndex + characterToInsert.length;
+            insertChar = true;
+        }
+        //Enter key pressed
+        else if(keyCode === 13) {
+            if(eventTarget.text().length > 0) {
+                characterToInsert = range.startOffset >= range.startContainer.wholeText.length ? "\n\r": "\n"; //If cursor is at the end of the line, add carriage return
+                insertChar = true;
+            }
+        } 
 
-        updateColors(eventTarget);
-        moveCursorToNewPosition(selection, cursorIndex + tab.length);
-    }
-    //Enter key pressed
-    else if(keyCode === 13) {
-        
-        if(eventTarget.text().length > 0) {
+        //Backspace key pressed
+        else if(keyCode === 8) {
             event.preventDefault();
-
-            let newLine = range.startOffset >= range.startContainer.wholeText.length ? "\n\r": "\n"; //If cursor is at the end of the line, add carriage return
-
+            
+            //Update html as text (removes all spans)
             eventTarget.html(
-                eventTarget.text().substring(0, cursorIndex) + //All text up until the cursor
-                newLine + 
+                eventTarget.text().substring(0, cursorIndex - 1) + //All text up until the one character before cursor
                 eventTarget.text().substring(cursorIndex) //All text after the cursor
             );
 
             updateColors(eventTarget);
-            moveCursorToNewPosition(selection, cursorIndex + 1);
+            moveCursorToNewPosition(selection, cursorIndex - 1);
         }
-    } 
+        //Delete key pressed
+        else if(keyCode === 46) {
+            event.preventDefault();
+            
+            //Update html as text (removes all spans)
+            eventTarget.html(
+                eventTarget.text().substring(0, cursorIndex) + //All text up until the one character before cursor
+                eventTarget.text().substring(cursorIndex + 1) //All text after the cursor
+            );
 
-    //Backspace key pressed
-    else if(keyCode === 8) {
+            updateColors(eventTarget);
+            moveCursorToNewPosition(selection, cursorIndex);
+        }
+        
+        //Any character/symbol (excluding special keys like ALT, CTRL, SPACE, PGDOWN, etc)
+        if(key.trim().length === 1 || insertChar) {
+            event.preventDefault();
 
+            if(characterToInsert === "") {
+                characterToInsert = key;
+            }
+
+            //Update html as text (removes all spans)
+            eventTarget.html(
+                eventTarget.text().substring(0, cursorIndex) + //All text up until the cursor
+                characterToInsert +
+                eventTarget.text().substring(cursorIndex) //All text after the cursor
+            );
+
+            updateColors(eventTarget);
+            moveCursorToNewPosition(selection, newCursorIndex);
+        }
     }
-    //Delete key pressed
-    else if(keyCode === 46) {
-
-    }
-    //Left arrow, up arrow, right arrow, down arrow, end key, home key, page up key, page down key
-    // else if (keyCode === 37 || keyCode === 38 || keyCode === 39 || keyCode === 40 
-    //          || keyCode === 35 || keyCode === 36 || keyCode === 33 || keyCode === 34) {
-    //     updateColors(eventTarget);
-    // }
 }
 
 function updateColors(eventTarget) { 
     
     let currentHTML = "", currentWord = "", text = eventTarget.html();
 
-    for(let i = 0; i < text.length; i++) {
+    for(let i = 0; i <= text.length; i++) {
 
         currentHTML += text.charAt(i);
 
-        if((text.charAt(i) + "").trim() === "") { //USE REGEX INSTEAD?????????????????????????
+        if(text.charAt(i).match(/[^a-z_]/i)) { //character is not a letter (case-insensitive) or underscore
             //Check if currentWord is a keyword
             if(javaDarkTheme[currentWord + "KeyWord"]) {
 

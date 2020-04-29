@@ -23,7 +23,7 @@ function CodeArea() {
                     tab-size="4"
                     spellCheck="false" 
                     onKeyDown={makeCodeAreaPretty}
-                >
+                > 
                 </pre>
             </code>
         </div>
