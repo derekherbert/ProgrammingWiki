@@ -11,8 +11,14 @@ const $ = window.$;
 
 //BUGS:
 
-    //colors don't update when brackets are touching the keywords
-        //Ex: if() else{}
+    //colors don't update when brackets or other special characters are touching the keywords
+        //if() 
+        //else{} 
+        //int[] 
+        //return;
+        //case:
+        //else// or /*
+        //I guess anything besides alpha-numeric characters
 
     //When pasting content, it should paste without formatting, then update the colors
         //formatting meaning font-type, font-size, boldness, background-color, etc. 
@@ -25,6 +31,7 @@ const $ = window.$;
 //NICE TO DO: 
     //Change updateColors to run every keydown and click event?
         //Right now if I type a full keyword, it only updates when I hit space, tab, or enter. Would be nice if it updated when I moved arrow keys, or more generally updated the cursor position
+            //Or even nicer if it updated as soon as a keydown event occurs and the keyword is formed
 
 
 function makeCodeAreaPretty(event) {
