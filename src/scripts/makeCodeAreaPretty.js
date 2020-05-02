@@ -15,14 +15,9 @@ const $ = window.$;
 
 //BUGS:
 
-    //I did a hack in which I set the default codearea value to be \n
-        //if(eventTarget.text() == "") eventTarget.text("\n");
-        //This causes an issue when I backspace into the beginning of the textarea but still have text to my right. It shoves everything on a new line.
-        //I should fix updateColors to work properly on the first line
-
-
-    //if some text is selected, then you type, it should type over it, but instead appends
-        //same if you hit delete or backspace
+    //Shift-selecting is messed up:
+        //Hold Shift, then use the arrow keys to highlight -> weird behaviour
+        //Hold Shift, then click somewhere to the left or rght of the cursor -> weird behaviour
 
     //Copy and pasting spans pastes a new <pre> tag with the span inside
 
@@ -43,17 +38,17 @@ function makeCodeAreaPretty(event) {
        
     if(!event.ctrlKey && !event.altKey) {
 
+        //Delete any highlighted/selected text before processing the keydown event
+        let clearedText = clearHighlightedText(event.target);
+
         let keyCode = event.keyCode;
         let key = event.key;
         let eventTarget = $(event.target);
         let selection = window.getSelection();
-        let range = selection.getRangeAt(0);
         let cursorIndex = getCursorIndex(event.target, selection);
         let newCursorIndex = cursorIndex + 1;
         let insertChar = false;
         let characterToInsert = "";
-
-        if(eventTarget.text() == "") eventTarget.text("\n"); //Default text value is \n. This makes the updateColors() logic a bit simpler
 
         //Space key pressed
         if(keyCode === 32) {
@@ -69,7 +64,7 @@ function makeCodeAreaPretty(event) {
         //Enter key pressed
         else if(keyCode === 13) {
             if(eventTarget.text().length > 0) {
-                characterToInsert = range.startOffset >= range.startContainer.wholeText.length ? "\n\r": "\n"; //If cursor is at the end of the line, add carriage return
+                characterToInsert = selection.focusOffset >= selection.anchorNode.wholeText.length ? "\n\r": "\n"; //If cursor is at the end of the line, add carriage return
                 insertChar = true;
             }
         } 
@@ -78,24 +73,31 @@ function makeCodeAreaPretty(event) {
         else if(keyCode === 8) {
             event.preventDefault();
             
-            //Update html as text (removes all spans)
-            eventTarget.html(
-                eventTarget.text().substring(0, cursorIndex - 1) + //All text up until the one character before cursor
-                eventTarget.text().substring(cursorIndex) //All text after the cursor
-            );
+            //If there was highlighted/selected text and the user pressed Backspace, clearHighlightedText() has handled this already
+            if(!clearedText) {
+                //Update html as text (removes all spans)
+                eventTarget.html(
+                    eventTarget.text().substring(0, cursorIndex - 1) + //All text up until the one character before cursor
+                    eventTarget.text().substring(cursorIndex) //All text after the cursor
+                );
+                cursorIndex -= 1;
+            }
 
             updateColors(eventTarget);
-            moveCursorToNewPosition(selection, cursorIndex - 1);
+            moveCursorToNewPosition(selection, cursorIndex);
         }
         //Delete key pressed
         else if(keyCode === 46) {
             event.preventDefault();
-            
-            //Update html as text (removes all spans)
-            eventTarget.html(
-                eventTarget.text().substring(0, cursorIndex) + //All text up until the one character before cursor
-                eventTarget.text().substring(cursorIndex + 1) //All text after the cursor
-            );
+
+            //If there was highlighted/selected text and the user pressed Delete, clearHighlightedText() has handled this already
+            if(!clearedText) {
+                //Update html as text (removes all spans)
+                eventTarget.html(
+                    eventTarget.text().substring(0, cursorIndex) + //All text up until the one character before cursor
+                    eventTarget.text().substring(cursorIndex + 1) //All text after the cursor
+                );
+            }
 
             updateColors(eventTarget);
             moveCursorToNewPosition(selection, cursorIndex);
@@ -122,11 +124,18 @@ function makeCodeAreaPretty(event) {
     }
 }
 
+/**
+ * Cycles through the CodeArea's contents which have been converted to their text 
+ * values (no html tags) prior to calling this method. Each word that matches a keyword
+ * is added as a <span> with its corresponding colour. The keyword/color mappings are found
+ * in separate files.  
+ * 
+ * @param {$(event.target)} eventTarget 
+ */
 function updateColors(eventTarget) { 
-    
-    let currentHTML = "", currentWord = "", text = eventTarget.html();
+    let currentHTML = "", currentWord = "", text = eventTarget.html() + " "; //Add extra space so the last word is processed
 
-    for(let i = 0; i <= text.length; i++) {
+    for(let i = 0; i < text.length; i++) {
 
         currentHTML += text.charAt(i);
 
@@ -146,10 +155,20 @@ function updateColors(eventTarget) {
         }
     }
 
-    eventTarget.html(currentHTML);
+    eventTarget.html(currentHTML.substring(0, currentHTML.length-1)); //Remove the extra space that was added at the end
 }
 
+/**
+ * Cycles through each node in the CodeArea (a series of text nodes and span tags) to 
+ * find the "absolute" cursor position in the entire CodeArea. window.getSelection() only
+ * gives the relative cursor position within the current node. 
+ * 
+ * @param {event.target} eventTarget 
+ * @param {window.getSelection()} selection 
+ */
 function getCursorIndex(eventTarget, selection) {
+
+    if(selection.anchorNode.nodeName === "PRE") return 0; //If selection 
 
     let nodeCtr = 0;
     let charCtr = 0;
@@ -165,11 +184,105 @@ function getCursorIndex(eventTarget, selection) {
     return charCtr + selection.getRangeAt(0).startOffset;
 }
 
-//Move the cursor caret to the new cursor index
+/**
+ * Moves the cursor caret from the beginning of the CodeArea to the 
+ * specified "absolute" cursor index.
+ * 
+ * @param {window.getSelection()} selection 
+ * @param {int} cursorIndex 
+ */ 
 function moveCursorToNewPosition(selection, cursorIndex) {
     for(let i = 0; i < cursorIndex; i++) {
         selection.modify("move", "right", "character");
     }
+}
+
+/**
+ * If selection.isCollapsed === false, the user has some text highlighted/selected when 
+ * they triggered the keydown event. All nodes between then anchorNode and focusNode (inclusive) 
+ * are removed. This takes into account selections that are in the middle of a node, selections
+ * that are within a single node, and selections that span multiple nodes. 
+ * 
+ * The anchorNode and focusNode mark the beginning and end of a selection:
+ *    - If a user selects from left-to-right, the anchorNode will be on the left and the focusNode will be on the right. 
+ *    - If a user selects from right-to-left, the anchorNode will be on the right and the focusNode will be on the left.  
+ * 
+ * @param {event.target} eventTarget 
+ * @returns {boolean} true if selection is collapsed
+ */
+function clearHighlightedText(eventTarget) {
+    let selection = window.getSelection();
+
+    //There is text highlighted/selected
+    if(!selection.isCollapsed) { 
+        
+        //anchorNode => node in which selection starts 
+        let anchorNode = selection.anchorNode.parentNode.nodeName === "SPAN" ? selection.anchorNode.parentNode : selection.anchorNode;
+        //focusNode => node in which selection ends
+        let focusNode = selection.focusNode.parentNode.nodeName === "SPAN" ? selection.focusNode.parentNode : selection.focusNode;
+        let currentText = "";
+        let newCursorIndex;
+
+        if(anchorNode === focusNode) {
+
+            newCursorIndex = getCursorIndex(eventTarget, selection);
+            
+            if(selection.anchorOffset > selection.focusOffset) {
+                currentText =  $(eventTarget).text().substring(0, newCursorIndex) + $(eventTarget).text().substring(selection.anchorOffset);
+            }
+            else {
+                currentText =  $(eventTarget).text().substring(0, newCursorIndex) + $(eventTarget).text().substring(selection.focusOffset);
+            }
+        }
+        else {
+            
+            let foundFirst = false;
+            let foundSecond = false;
+            document.querySelector('pre').childNodes.forEach( 
+                function(currentNode) { 
+                    
+                    //Add everything to the left of the anchor offset
+                    if(anchorNode === currentNode) {
+                        
+                        if(!foundFirst) {
+                            currentText += anchorNode.textContent.substring(0, selection.anchorOffset);
+                            newCursorIndex = currentText.length;
+                            foundFirst = true;
+                        }
+                        else {
+                            currentText += anchorNode.textContent.substring(selection.anchorOffset);
+                            foundSecond = true;
+                        }
+
+                        return;
+                    } 
+                    //Add everything to the right of the focus offset
+                    if(focusNode === currentNode) {
+                        
+                        if(!foundFirst) {
+                            currentText += focusNode.textContent.substring(0, selection.focusOffset);
+                            newCursorIndex = currentText.length;
+                            foundFirst = true;
+                        }
+                        else {
+                            currentText += focusNode.textContent.substring(selection.focusOffset);
+                            foundSecond = true;
+                        }
+                        return;
+                    } 
+
+                    //Only add nodes to the left and right of the selected nodes (exclude nodes in between)
+                    if(!foundFirst || foundSecond) {
+                        currentText += currentNode.textContent;
+                    }
+                }
+            );
+        }
+        $(eventTarget).html(currentText);
+        moveCursorToNewPosition(selection, newCursorIndex);
+        return true;
+    }
+    return false;
 }
 
 export default makeCodeAreaPretty;
