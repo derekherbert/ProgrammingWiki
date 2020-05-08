@@ -1,11 +1,11 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "ac6d7c4aba0a179987270dce0d8beb56",
+    "revision": "80554196e61bc6627e4fc73fb54b8316",
     "url": "/ProgrammingWiki/index.html"
   },
   {
-    "revision": "3bc0d24064a701716e46",
-    "url": "/ProgrammingWiki/static/css/main.00e85cf2.chunk.css"
+    "revision": "65738a70aeb4370f8f9a",
+    "url": "/ProgrammingWiki/static/css/main.2f8db90b.chunk.css"
   },
   {
     "revision": "5edff1b165470bb499b5",
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/ProgrammingWiki/static/js/2.6bf7f3ab.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "3bc0d24064a701716e46",
-    "url": "/ProgrammingWiki/static/js/main.ac64760c.chunk.js"
+    "revision": "65738a70aeb4370f8f9a",
+    "url": "/ProgrammingWiki/static/js/main.10b1ffd7.chunk.js"
   },
   {
     "revision": "8db230b721d4fe8f499e",
