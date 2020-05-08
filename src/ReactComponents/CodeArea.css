@@ -38,3 +38,7 @@
 .CodeArea-code-segment {
     display: inline;
 }
+
+.CodeArea-comment-span {
+    color: #529949;
+}

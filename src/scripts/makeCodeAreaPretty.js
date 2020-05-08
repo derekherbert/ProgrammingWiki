@@ -13,11 +13,12 @@ const $ = window.$;
             //if the last real character in the previous line is an open bracket, tab in one extra
     //If a word starts with a capital, update the color (it is a class)
 
+    //Comments -> // and /* and /** */
+
 //BUGS:
 
-    //Shift-selecting is messed up:
-        //Hold Shift, then use the arrow keys to highlight -> weird behaviour
-        //Hold Shift, then click somewhere to the left or rght of the cursor -> weird behaviour
+    // if | else
+        //Cursor between the if and else, hitting enter shoves else two lines down instead of one
 
     //Copy and pasting spans pastes a new <pre> tag with the span inside
 
@@ -30,19 +31,20 @@ const $ = window.$;
     //Angle brackets treated as HTML
 
 //NICE TO DO: 
-    //Change updateColors to run every keydown and click event?
-        //Right now if I type a full keyword, it only updates when I hit space, tab, or enter. Would be nice if it updated when I moved arrow keys, or more generally updated the cursor position
-            //Or even nicer if it updated as soon as a keydown event occurs and the keyword is formed
 
 function makeCodeAreaPretty(event) {
        
     if(!event.ctrlKey && !event.altKey) {
 
-        //Delete any highlighted/selected text before processing the keydown event
-        let clearedText = clearHighlightedText(event.target);
-
         let keyCode = event.keyCode;
         let key = event.key;
+        
+        //Delete any highlighted/selected text before processing the keydown event
+        let clearedText = false;
+        if(key.trim().length === 1 || keyCode === 32 || keyCode === 9 || keyCode === 13 || keyCode === 8 || keyCode === 46) { 
+            clearedText = clearHighlightedText(event.target);
+        }
+        
         let eventTarget = $(event.target);
         let selection = window.getSelection();
         let cursorIndex = getCursorIndex(event.target, selection);
@@ -133,13 +135,29 @@ function makeCodeAreaPretty(event) {
  * @param {$(event.target)} eventTarget 
  */
 function updateColors(eventTarget) { 
-    let currentHTML = "", currentWord = "", text = eventTarget.html() + " "; //Add extra space so the last word is processed
+    let currentHTML = "", currentWord = "", currentComment = "//", text = eventTarget.html() + " "; //Add extra space so the last word is processed
+    let processingComment = false;
 
     for(let i = 0; i < text.length; i++) {
 
         currentHTML += text.charAt(i);
 
-        if(text.charAt(i).match(/[^a-z_]/i)) { //character is not a letter (case-insensitive) or underscore
+        //Check for single-line comment (//)
+        if(processingComment || (text.charAt(i-1) === "/" && text.charAt(i-2) === "/")) {
+            
+            if(text.charAt(i) === "\n" || i === text.length - 1) {
+                currentHTML = currentHTML.substring(0, currentHTML.length - currentComment.length - 1) + 
+                            "<span class='CodeArea-comment-span'>" + currentComment + "</span>\n";
+                currentComment = "//";
+                processingComment = false;
+            }
+            else {
+                currentComment += text.charAt(i);
+                processingComment = true;
+            }
+        }
+        //Check for language keyword
+        else if(text.charAt(i).match(/[^a-z_]/i)) { //character is not a letter (case-insensitive) or underscore
             //Check if currentWord is a keyword
             if(javaDarkTheme[currentWord + "KeyWord"]) {
 
@@ -150,6 +168,7 @@ function updateColors(eventTarget) {
             }
             currentWord = "";
         }
+        
         else {
             currentWord += text.charAt(i);
         }
