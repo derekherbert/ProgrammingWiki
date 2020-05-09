@@ -2,6 +2,8 @@ import React, {useState} from "react";
 import './CodeArea.css';
 import makeCodeAreaPretty from "../scripts/makeCodeAreaPretty.js";
 
+const $ = window.$;
+
 function CodeArea() {
     const [code] = useState(`
                 <div>import java.io.*;</div>
@@ -22,7 +24,8 @@ function CodeArea() {
                     wrap="off" 
                     tab-size="4"
                     spellCheck="false" 
-                    onKeyDown={makeCodeAreaPretty}
+                    onKeyDown={makeCodeAreaPretty.processKeyDown}
+                    onPaste={makeCodeAreaPretty.pasteAsPlainText}
                 > 
                 </pre>
             </code>

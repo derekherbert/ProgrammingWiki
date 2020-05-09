@@ -31,7 +31,7 @@ const $ = window.$;
 //NICE TO DO: 
     //Comments /** */
 
-function makeCodeAreaPretty(event) {
+function processKeyDown(event) {
        
     if(!event.ctrlKey && !event.altKey) {
 
@@ -331,4 +331,20 @@ function replaceAngleBrackets(text) {
     return newText;
 }
 
-export default makeCodeAreaPretty;
+function pasteAsPlainText(event) {
+    event.preventDefault();
+    let textToPaste = event.clipboardData.getData("text/plain").replace(/\r/g, ""); //remove carriage returns
+    let selection = window.getSelection();
+    let eventTarget = event.target.tagName === "SPAN" ? event.target.parentElement : event.target;
+    let cursorIndex = getCursorIndex(eventTarget, selection);
+    eventTarget = $(eventTarget);
+    eventTarget.html(
+        replaceAngleBrackets(eventTarget.text().substring(0, cursorIndex)) + //All text up until the cursor
+        replaceAngleBrackets(textToPaste) + 
+        replaceAngleBrackets(eventTarget.text().substring(cursorIndex)) //All text after the cursor
+    );
+    updateColors(eventTarget);
+    moveCursorToNewPosition(selection, cursorIndex + textToPaste.length);
+}
+
+export default {processKeyDown, updateColors, pasteAsPlainText};
