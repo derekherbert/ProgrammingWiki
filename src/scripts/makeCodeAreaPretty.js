@@ -13,7 +13,7 @@ const $ = window.$;
             //if the last real character in the previous line is an open bracket, tab in one extra
     //If a word starts with a capital, update the color (it is a class)
 
-    //Comments -> // and /* and /** */
+    //Comments -> /*
 
 //BUGS:
 
@@ -28,9 +28,8 @@ const $ = window.$;
                 //do I need to convert tabs to spaces??
                     // and update them to the corresponding tab-size selected?
 
-    //Angle brackets treated as HTML
-
 //NICE TO DO: 
+    //Comments /** */
 
 function makeCodeAreaPretty(event) {
        
@@ -79,8 +78,8 @@ function makeCodeAreaPretty(event) {
             if(!clearedText) {
                 //Update html as text (removes all spans)
                 eventTarget.html(
-                    eventTarget.text().substring(0, cursorIndex - 1) + //All text up until the one character before cursor
-                    eventTarget.text().substring(cursorIndex) //All text after the cursor
+                    replaceAngleBrackets(eventTarget.text().substring(0, cursorIndex - 1)) + //All text up until the one character before cursor
+                    replaceAngleBrackets(eventTarget.text().substring(cursorIndex)) //All text after the cursor
                 );
                 cursorIndex -= 1;
             }
@@ -96,8 +95,8 @@ function makeCodeAreaPretty(event) {
             if(!clearedText) {
                 //Update html as text (removes all spans)
                 eventTarget.html(
-                    eventTarget.text().substring(0, cursorIndex) + //All text up until the one character before cursor
-                    eventTarget.text().substring(cursorIndex + 1) //All text after the cursor
+                    replaceAngleBrackets(eventTarget.text().substring(0, cursorIndex)) + //All text up until the one character before cursor
+                    replaceAngleBrackets(eventTarget.text().substring(cursorIndex + 1)) //All text after the cursor
                 );
             }
 
@@ -115,9 +114,9 @@ function makeCodeAreaPretty(event) {
 
             //Update html as text (removes all spans)
             eventTarget.html(
-                eventTarget.text().substring(0, cursorIndex) + //All text up until the cursor
-                characterToInsert +
-                eventTarget.text().substring(cursorIndex) //All text after the cursor
+                replaceAngleBrackets(eventTarget.text().substring(0, cursorIndex)) + //All text up until the cursor
+                replaceAngleBrackets(characterToInsert) +
+                replaceAngleBrackets(eventTarget.text().substring(cursorIndex)) //All text after the cursor
             );
 
             updateColors(eventTarget);
@@ -297,11 +296,39 @@ function clearHighlightedText(eventTarget) {
                 }
             );
         }
-        $(eventTarget).html(currentText);
+        $(eventTarget).html(replaceAngleBrackets(currentText));
         moveCursorToNewPosition(selection, newCursorIndex);
         return true;
     }
     return false;
+}
+
+/**
+ * Takes in plain text as a parameter and replaces each "<" for "&lt;" and each ">" for "&gt;".
+ * This is needed when updating the CodeArea's inner HTML so as to not inject HTML when injecting text. 
+ * 
+ * @param {String} text 
+ */
+function replaceAngleBrackets(text) {
+
+    let currentChar;
+    let newText = "";
+    for(let i = 0; i < text.length; i++) {
+
+        currentChar = text.charAt(i);
+        
+        if(currentChar === "<") {
+            newText += "&lt;";
+        }
+        else if (currentChar === ">") {
+            newText += "&gt;";
+        }
+        else {
+            newText += currentChar;
+        }
+    }
+
+    return newText;
 }
 
 export default makeCodeAreaPretty;
