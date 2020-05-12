@@ -16,7 +16,7 @@ const $ = window.$;
     //Comments -> /*
 
 //BUGS:
-
+    //Ctrl+a selects everything + an extra character at the end which stays selected when I hit backspace
     // if | else
         //Cursor between the if and else, hitting enter shoves else two lines down instead of one
 
@@ -30,6 +30,7 @@ const $ = window.$;
 
 //NICE TO DO: 
     //Comments /** */
+    //Indentation guide (maybe a span with a border-right?)
 
 function processKeyDown(event) {
        
